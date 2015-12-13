@@ -1,6 +1,13 @@
 var express = require('express');
 var app = express();
-
+var MongoClient = require('mongodb').MongoClient;
+var mongodb;
+MongoClient.connect('mongodb://localhost:27017/sample1', function(err, db) {
+  if (err) {
+    throw err;
+  }
+  mongodb = db;
+});
 // set the port of our application
 // process.env.PORT lets the port be set by Heroku
 var port = process.env.PORT || 4000;
@@ -18,7 +25,13 @@ app.get('/', function(req, res) {
     res.render('index');
 });
 app.get('/users', function(req, res) {
-   res.json({ message: 'hooray! welcome to our api!' }); 
+  // res.json({ message: 'hooray! welcome to our api!' }); 
+    mongodb.collection('usercollection').find().toArray(function(err, result) {
+    if (err) {
+      throw err;
+    }
+    res.json({ users: result}); 
+  });
 });
 
 app.listen(port, function() {
