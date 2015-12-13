@@ -2,7 +2,9 @@ var express = require('express');
 var app = express();
 var MongoClient = require('mongodb').MongoClient;
 var mongodb;
-MongoClient.connect('mongodb://localhost:27017/sample1', function(err, db) {
+//mongodb://localhost:27017/sample1
+//mongodb://rupesh:rupesh1@ds027335.mongolab.com:27335/heroku_1x6mqtdt
+MongoClient.connect('mongodb://rupesh:rupesh1@ds027335.mongolab.com:27335/heroku_1x6mqtdt', function(err, db) {
   if (err) {
     throw err;
   }
