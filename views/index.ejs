@@ -1,24 +1,149 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Node Sample App</title>
+<canvas id="gameCanvas" width="800" height="600"></canvas>
+<script>
+var canvas, 
+   canvasContext,
+   ballX = 50,
+   ballY = 50,
+   ballSpeedX = 10
+   ballSpeedY = 4,
+   paddle1Y = 250
+   paddle2Y = 250
+   player1Score = 0,
+   player2Score = 0,
+   showWinningScreen = false;
+const PADDLE_HEIGHT = 100;
+const PADDLE_THICKNESS = 10;
+const WINNING_SCORE = 3;
+window.onload = function() {
+	canvas = document.getElementById('gameCanvas')
+	canvasContext = canvas.getContext('2d')
+	var framesPerSecond = 30;
+	setInterval(function() {
+	    moveEverything()
+		drawEverything()
+	},1000/framesPerSecond);
+	canvas.addEventListener('mousemove',function(evt){
+		var mousePos = calculateMousePos(evt);
+		paddle1Y = mousePos.y - (PADDLE_HEIGHT/2)
+	});
+	canvas.addEventListener('mousedown',restart);
+}
 
-    <!-- CSS -->
-    <!-- load bootstrap and our own personal stylesheet -->
-    <link href="//maxcdn.bootstrapcdn.com/bootswatch/3.2.0/superhero/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css">
+function calculateMousePos(evt) {
+	var rect = canvas.getBoundingClientRect();
+	var root = document.documentElement;
+	var mouseX = evt.clientX - rect.left - root.scrollLeft;
+	var mouseY = evt.clientY - rect.top - root.scrollTop;
+	return {
+		x: mouseX,
+		y: mouseY
+	}
+}
 
-</head>
-<body>
+function restart(evt) {
+	if(showWinningScreen) {
+		player1Score =0;
+		player2Score =0;
+		showWinningScreen = false;
+	}
+}
+function ballReset() {
+    if(player1Score >= WINNING_SCORE || player2Score >= WINNING_SCORE) {
+		showWinningScreen = true;
+	}
+    ballSpeedX = -ballSpeedX;
+	ballX = canvas.width/2;
+	ballY = canvas.height/2;
+}
+function computerMovement() {
+	var paddle2YCenter = paddle2Y + (PADDLE_HEIGHT/2)
+	if(paddle2YCenter < ballY - 35) {
+		paddle2Y += 6
+	}else if(paddle2YCenter > ballY + 35) {
+		paddle2Y -= 6
+	}
+}
+ function drawNet() {
+	for(i=0;i<canvas.height;i+=40) {
+		colorRect(canvas.width/2-1,i,2,20,'#fff');
+	}
+ }
+ function moveEverything() {
+	  if(showWinningScreen) {
+		return;
+	  }
+      computerMovement()
+	  
+	  ballX +=  ballSpeedX;
+	  ballY +=  ballSpeedY;
+	  
+	  
+	  if(ballX < 0) {
+		if(ballY > paddle1Y && ballY < paddle1Y + PADDLE_HEIGHT) {
+			ballSpeedX = -ballSpeedX;
+			var deltaY = ballY - (paddle1Y+PADDLE_HEIGHT/2)
+			ballSpeedY = deltaY * 0.35
+		}else {
+			player2Score += 1;
+			ballReset()
+			
+		}
+	  }
+	  if(ballX > canvas.width) {
+		if(ballY > paddle2Y && ballY < paddle2Y + PADDLE_HEIGHT) {
+			ballSpeedX = -ballSpeedX;
+			var deltaY = ballY - (paddle2Y+PADDLE_HEIGHT/2)
+			ballSpeedY = deltaY * 0.35
+		}else {
+			player1Score += 1;
+			ballReset()
+			
+		}
+	  }
+	  if(ballY < 0) {
+		 ballSpeedY = -ballSpeedY;
+	  }
+	  if(ballY > canvas.height) {
+		 ballSpeedY = -ballSpeedY;
+	  }
+ }
 
-<div class="container">
-    <div class="jumbotron">
-        <h1>This Is Heroku Awesome!</h1>
-        <p>This is the sample of a tutorial on <a href="https://scotch.io">scotch.io</a></p>
-        <a href="https://scotch.io/tutorials/" class="btn btn-primary btn-lg">View the Tutorial</a>
-    </div>
-</div>
-    
-</body>
-</html
+function drawEverything() {
+  //for table
+  colorRect(0,0,canvas.width,canvas.height,'green');
+  if(showWinningScreen) {
+	 if(player1Score >= WINNING_SCORE) {
+		canvasContext.fillStyle = 'green';
+		canvasContext.fillText("player1 wins!",350,300)
+  	}else if(player2Score >= WINNING_SCORE) {
+		canvasContext.fillStyle = '#fff';
+		canvasContext.fillText("player2 wins!",350,300)
+	}
+	canvasContext.fillStyle = '#fff';
+	canvasContext.fillText("Click to continue",350,500)
+	return;
+  }
+ 
+
+  //left player paddle 
+  colorRect(0,paddle1Y,PADDLE_THICKNESS,PADDLE_HEIGHT,'#fff') 
+  //right player paddle
+  colorRect(canvas.width-PADDLE_THICKNESS,paddle2Y,PADDLE_THICKNESS,PADDLE_HEIGHT,'#fff')
+  //table tennis ball
+  colorCircle(ballX,ballY,10,0,'#fff');
+  drawNet();
+  canvasContext.fillText(player1Score,100,100)
+  canvasContext.fillText(player2Score,canvas.width - 100,100)
+}
+
+function  colorRect(leftX,topY,width,height,drawColor) {
+	  canvasContext.fillStyle = drawColor
+      canvasContext.fillRect(leftX,topY,width,height);
+}
+function colorCircle(centerX,centerY,radius,height,drawColor) {
+  canvasContext.fillStyle = drawColor
+  canvasContext.beginPath()
+  canvasContext.arc(centerX,centerY,10,0,Math.PI*2,true);
+  canvasContext.fill()
+}
+</script>
